@@ -107,8 +107,30 @@ public class DataAccessObject {
 
     // UPDATE
 
+    public void renameRepository(String oldRepoName, String newRepoName) throws SQLException {
 
+    }
+
+    public void renameBranch(String oldBranchName, String newBranchName, String repoName) throws SQLException {
+
+    }
+
+    public void renameFile(String oldFileName, String newFileName, String branchName, String repoName) throws SQLException {
+
+    }
 
     // DELETE
+
+    public void deleteRepository(String repoName) throws SQLException {
+
+    }
+
+    public void deleteBranch(String branchName, String repoName) throws SQLException {
+
+    }
+
+    public void deleteFile(String fileName, String branchName, String repoName) throws SQLException {
+
+    }
 
 }
