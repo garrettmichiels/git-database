@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `git` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `git`;
 -- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
 --
 -- Host: localhost    Database: git
@@ -29,9 +27,12 @@ CREATE TABLE `branch` (
   `repository` varchar(32) NOT NULL,
   `lastPushDate` date DEFAULT NULL,
   `isMain` tinyint(1) DEFAULT NULL,
+  `branchedoff` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`name`,`repository`),
-  KEY `repository` (`repository`),
-  CONSTRAINT `branch_ibfk_1` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`)
+  KEY `branchedoff_idx` (`branchedoff`),
+  KEY `branch_ibfk_1` (`repository`),
+  CONSTRAINT `branch_ibfk_1` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `branch_ibfk_2` FOREIGN KEY (`branchedoff`) REFERENCES `branch` (`name`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -41,36 +42,8 @@ CREATE TABLE `branch` (
 
 LOCK TABLES `branch` WRITE;
 /*!40000 ALTER TABLE `branch` DISABLE KEYS */;
+INSERT INTO `branch` VALUES ('branch1','repo1','2024-04-15',1,'mainrepo1'),('mainrepo1','repo1','2024-04-15',1,NULL);
 /*!40000 ALTER TABLE `branch` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `branch_off`
---
-
-DROP TABLE IF EXISTS `branch_off`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `branch_off` (
-  `new_branch` varchar(32) NOT NULL,
-  `old_branch` varchar(32) NOT NULL,
-  `repository` varchar(32) NOT NULL,
-  PRIMARY KEY (`new_branch`,`old_branch`,`repository`),
-  KEY `old_branch` (`old_branch`),
-  KEY `repository` (`repository`),
-  CONSTRAINT `branch_off_ibfk_1` FOREIGN KEY (`new_branch`) REFERENCES `branch` (`name`),
-  CONSTRAINT `branch_off_ibfk_2` FOREIGN KEY (`old_branch`) REFERENCES `branch` (`name`),
-  CONSTRAINT `branch_off_ibfk_3` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `branch_off`
---
-
-LOCK TABLES `branch_off` WRITE;
-/*!40000 ALTER TABLE `branch_off` DISABLE KEYS */;
-/*!40000 ALTER TABLE `branch_off` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -84,9 +57,9 @@ CREATE TABLE `collaboration` (
   `programmer` varchar(32) NOT NULL,
   `repository` varchar(32) NOT NULL,
   PRIMARY KEY (`programmer`,`repository`),
-  KEY `repository` (`repository`),
-  CONSTRAINT `collaboration_ibfk_1` FOREIGN KEY (`programmer`) REFERENCES `programmer` (`username`),
-  CONSTRAINT `collaboration_ibfk_2` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`)
+  KEY `collaboration_ibfk_2` (`repository`),
+  CONSTRAINT `collaboration_ibfk_1` FOREIGN KEY (`programmer`) REFERENCES `programmer` (`username`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `collaboration_ibfk_2` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -113,10 +86,10 @@ CREATE TABLE `commit` (
   `message` varchar(128) DEFAULT NULL,
   `time` time DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `branch` (`branch`),
-  KEY `repository` (`repository`),
-  CONSTRAINT `commit_ibfk_1` FOREIGN KEY (`branch`) REFERENCES `branch` (`name`),
-  CONSTRAINT `commit_ibfk_2` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`)
+  KEY `commit_ibfk_1` (`branch`),
+  KEY `commit_ibfk_2` (`repository`),
+  CONSTRAINT `commit_ibfk_1` FOREIGN KEY (`branch`) REFERENCES `branch` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `commit_ibfk_2` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -142,8 +115,8 @@ CREATE TABLE `file` (
   `language` varchar(32) DEFAULT NULL,
   `text` varchar(256) DEFAULT NULL,
   PRIMARY KEY (`name`,`commit`),
-  KEY `commit` (`commit`),
-  CONSTRAINT `file_ibfk_1` FOREIGN KEY (`commit`) REFERENCES `commit` (`id`)
+  KEY `file_ibfk_1` (`commit`),
+  CONSTRAINT `file_ibfk_1` FOREIGN KEY (`commit`) REFERENCES `commit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -177,6 +150,7 @@ CREATE TABLE `programmer` (
 
 LOCK TABLES `programmer` WRITE;
 /*!40000 ALTER TABLE `programmer` DISABLE KEYS */;
+INSERT INTO `programmer` VALUES ('rcurcio','pword',0);
 /*!40000 ALTER TABLE `programmer` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -193,8 +167,8 @@ CREATE TABLE `repository` (
   `lastMergeDate` date DEFAULT NULL,
   `creator` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`name`),
-  KEY `creator` (`creator`),
-  CONSTRAINT `repository_ibfk_1` FOREIGN KEY (`creator`) REFERENCES `programmer` (`username`)
+  KEY `repository_ibfk_1` (`creator`),
+  CONSTRAINT `repository_ibfk_1` FOREIGN KEY (`creator`) REFERENCES `programmer` (`username`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -204,7 +178,35 @@ CREATE TABLE `repository` (
 
 LOCK TABLES `repository` WRITE;
 /*!40000 ALTER TABLE `repository` DISABLE KEYS */;
+INSERT INTO `repository` VALUES ('repo1','2024-04-15','2024-04-15','rcurcio');
 /*!40000 ALTER TABLE `repository` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `todo_item`
+--
+
+DROP TABLE IF EXISTS `todo_item`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `todo_item` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `message` text,
+  `repository` varchar(32) DEFAULT NULL,
+  `completed` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `repository` (`repository`),
+  CONSTRAINT `todo_item_ibfk_1` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `todo_item`
+--
+
+LOCK TABLES `todo_item` WRITE;
+/*!40000 ALTER TABLE `todo_item` DISABLE KEYS */;
+/*!40000 ALTER TABLE `todo_item` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -216,4 +218,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-09 12:05:57
+-- Dump completed on 2024-04-15 22:28:44
