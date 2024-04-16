@@ -1,7 +1,6 @@
 use git;
 
 DROP PROCEDURE IF EXISTS create_file;
-
 DELIMITER $$
 CREATE PROCEDURE create_file(IN file_text TEXT, file_name VARCHAR(32), commit_id INT, file_language VARCHAR(32))
 BEGIN
@@ -32,6 +31,77 @@ VALUES (branch_name, repo_name, lastPushDate, isMain);
 INSERT INTO branch_off (new_branch, old_branch, repository)
 VALUES (branch_name, old_branch, repo_name);
 END; $$
+
+DROP PROCEDURE IF EXISTS create_repository;
+DELIMITER $$
+CREATE PROCEDURE create_repository(IN repoName VARCHAR(32), username VARCHAR(32))
+BEGIN
+INSERT INTO repository (name, creator) VALUES (repoName, username);
+END; $$
+
+DROP PROCEDURE IF EXISTS create_programmer;
+DELIMITER $$
+CREATE PROCEDURE create_programmer(IN username VARCHAR(32), password VARCHAR(32), isManager BOOL)
+BEGIN
+INSERT INTO programmer (username, password, isManager)
+VALUES (username, password, isManager);
+END; $$
+
+
+DROP PROCEDURE IF EXISTS delete_branch;
+DELIMITER $$
+CREATE PROCEDURE delete_branch(
+    IN branch_name VARCHAR(32),
+    IN repository_name VARCHAR(32)
+)
+BEGIN
+  DELETE FROM branch
+  WHERE name = branch_name AND repository = repository_name;
+END; $$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS delete_repository;
+DELIMITER $$
+CREATE PROCEDURE delete_branch(IN repository_name VARCHAR(32))
+BEGIN
+  DELETE FROM repository WHERE name = repository_name;
+END; $$
+
+DELIMITER ;
+
+-- Returns the repostiories associated with a programmer
+DROP PROCEDURE IF EXISTS get_repositories_for_programmer;
+DELIMITER $$
+CREATE PROCEDURE get_repositories_for_programmer(IN username VARCHAR(32))
+BEGIN
+SELECT repository FROM collaboration WHERE programmer = username;
+END; $$
+DELIMITER ;
+
+-- Returns the number of repostiories associated with a programmer
+DROP FUNCTION IF EXISTS get_repository_count_for_programmer;
+DELIMITER $$
+CREATE FUNCTION get_repository_count_for_programmer(username VARCHAR(32))
+   RETURNS INT DETERMINISTIC
+   CONTAINS SQL
+BEGIN
+SELECT COUNT(repository) FROM collaboration WHERE programmer = username;
+END; $$
+DELIMITER ;
+
+
+-- DROP PROCEDURE IF EXISTS delete_file;
+-- DELIMITER $$
+-- CREATE PROCEDURE delete_file(
+--     IN file_name VARCHAR(32))
+-- BEGIN
+--   SELECT file
+-- END; $$
+
+-- DELIMITER ;
+
+
 
 
 DROP FUNCTION IF EXISTS validate_login;
