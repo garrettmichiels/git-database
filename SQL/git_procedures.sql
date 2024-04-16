@@ -17,27 +17,42 @@ CREATE PROCEDURE create_commit(IN branch_name VARCHAR(32), repo_name VARCHAR(32)
 BEGIN
 INSERT INTO commit (branch, repository, message, time)
 VALUES (branch_name, repo_name, message, CURRENT_TIMESTAMP);
+RETURN LAST_INSERTED_ID();
 END; $$
 
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS create_branch;
 DELIMITER $$
-CREATE PROCEDURE create_branch(IN branch_name VARCHAR(32), repo_name VARCHAR(32), lastPushDate DATE, isMain BOOL, old_branch VARCHAR(32))
+CREATE PROCEDURE create_branch(IN branch_name VARCHAR(32), repo_name VARCHAR(32), isMain BOOL, branchedoff VARCHAR(32))
 BEGIN
-INSERT INTO branch (branch, repository, lastPushDate, isMain)
-VALUES (branch_name, repo_name, lastPushDate, isMain);
+INSERT INTO branch (branch, repository, isMain, branchedoff)
+VALUES (branch_name, repo_name, isMain, branchedoff);
 
-INSERT INTO branch_off (new_branch, old_branch, repository)
-VALUES (branch_name, old_branch, repo_name);
 END; $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS create_collaboration;
+DELIMITER $$
+CREATE PROCEDURE create_collaboration(IN username VARCHAR(32), repoName VARCHAR(32))
+BEGIN
+INSERT INTO collaboration (programmer, repository) VALUES (username, repoName);
+END; $$
+DELIMITER ;
 
 DROP PROCEDURE IF EXISTS create_repository;
 DELIMITER $$
 CREATE PROCEDURE create_repository(IN repoName VARCHAR(32), username VARCHAR(32))
 BEGIN
 INSERT INTO repository (name, creator) VALUES (repoName, username);
+CALL create_collaboration(username, repoName);
 END; $$
+
+DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS create_programmer;
 DELIMITER $$
@@ -47,16 +62,23 @@ INSERT INTO programmer (username, password, isManager)
 VALUES (username, password, isManager);
 END; $$
 
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS create_todo;
+DELIMITER $$
+CREATE PROCEDURE create_todo(IN message TEXT, repository VARCHAR(32), completed BOOL)
+BEGIN
+INSERT INTO todo_item (message, repository, completed)
+VALUES (message, repository, completed);
+END; $$
+
+DELIMITER ;
 
 DROP PROCEDURE IF EXISTS delete_branch;
 DELIMITER $$
-CREATE PROCEDURE delete_branch(
-    IN branch_name VARCHAR(32),
-    IN repository_name VARCHAR(32)
-)
+CREATE PROCEDURE delete_branch(IN branch_name VARCHAR(32), IN repository_name VARCHAR(32))
 BEGIN
-  DELETE FROM branch
-  WHERE name = branch_name AND repository = repository_name;
+  DELETE FROM branch WHERE name = branch_name AND repository = repository_name;
 END; $$
 
 DELIMITER ;
@@ -68,6 +90,33 @@ BEGIN
   DELETE FROM repository WHERE name = repository_name;
 END; $$
 
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS delete_todo;
+DELIMITER $$
+CREATE PROCEDURE delete_todo(IN todoId INT)
+BEGIN
+  DELETE FROM todo_item WHERE id = todoId;
+END; $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS delete_programmer;
+DELIMITER $$
+CREATE PROCEDURE delete_programmer(IN username VARCHAR(32))
+BEGIN
+  DELETE FROM programmer WHERE username = username;
+END; $$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS delete_commit;
+DELIMITER $$
+CREATE PROCEDURE delete_commit(IN commit_id INT)
+BEGIN
+  DELETE FROM commit WHERE id = commit_id;
+END; $$
 DELIMITER ;
 
 -- Returns the repostiories associated with a programmer
@@ -91,17 +140,17 @@ END; $$
 DELIMITER ;
 
 
--- DROP PROCEDURE IF EXISTS delete_file;
--- DELIMITER $$
--- CREATE PROCEDURE delete_file(
---     IN file_name VARCHAR(32))
--- BEGIN
---   SELECT file
--- END; $$
+DROP PROCEDURE IF EXISTS delete_file;
+DELIMITER $$
+CREATE PROCEDURE delete_file(
+    IN file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32))
+BEGIN
+  DECLARE commit_id INT;
+  SELECT commit.id INTO commit_id FROM file JOIN commit ON file.commit = commit.id
+  WHERE file.name = file_name AND commit.branch = branch_name AND commit.repository = repo_name;
+END; $$
 
--- DELIMITER ;
-
-
+DELIMITER ;
 
 
 DROP FUNCTION IF EXISTS validate_login;
@@ -151,12 +200,6 @@ CREATE PROCEDURE get_files_in_branch(branch VARCHAR(32))
 	END $$
 
 DELIMITER ;
-
-
-
-
-
-
 
 
 
