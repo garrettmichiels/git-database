@@ -66,6 +66,12 @@ public class DataAccessObject {
     // READ
 
 
+    public ResultSet getFilesForBranch(String branchName) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("{CALL get_files_in_branch(?)}");
+        stmt.setString(1, branchName);
+        return stmt.executeQuery();
+    }
+
     public ResultSet getBranchesForRepo(String repoName) throws SQLException{
         CallableStatement stmt = connection.prepareCall("{CALL get_branches_in_repo(?)}");
         stmt.setString(1, repoName);
@@ -85,6 +91,19 @@ public class DataAccessObject {
         rs.next();
         return rs.getInt(1);
     }
+
+
+    public boolean validateLogin(String username, String password) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("CALL validate_login(?, ?, ?)");
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        stmt.registerOutParameter(3, Types.TINYINT);
+        stmt.execute();
+        boolean result = stmt.getBoolean(3);
+        System.out.println(result);
+        return result;
+    }
+
 
     // UPDATE
 

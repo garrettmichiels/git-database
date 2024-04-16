@@ -11,22 +11,22 @@ END; $$
 DELIMITER ;
 
 
-DROP PROCEDURE IF EXISTS create_commit;
-DELIMITER $$
-CREATE PROCEDURE create_commit(IN branch_name VARCHAR(32), repo_name VARCHAR(32), message VARCHAR(128))
-BEGIN
-INSERT INTO commit (branch, repository, message, time)
-VALUES (branch_name, repo_name, message, CURRENT_TIMESTAMP);
-RETURN LAST_INSERTED_ID();
-END; $$
+-- DROP PROCEDURE IF EXISTS create_commit;
+-- DELIMITER $$
+-- CREATE PROCEDURE create_commit(IN branch_name VARCHAR(32), repo_name VARCHAR(32), message VARCHAR(128))
+-- BEGIN
+-- INSERT INTO commit (branch, repository, message, time)
+-- VALUES (branch_name, repo_name, message, CURRENT_TIMESTAMP);
+-- RETURN LAST_INSERTED_ID();
+-- END; $$
 
-DELIMITER ;
+-- DELIMITER ;
 
 DROP PROCEDURE IF EXISTS create_branch;
 DELIMITER $$
 CREATE PROCEDURE create_branch(IN branch_name VARCHAR(32), repo_name VARCHAR(32), isMain BOOL, branchedoff VARCHAR(32))
 BEGIN
-INSERT INTO branch (branch, repository, isMain, branchedoff)
+INSERT INTO branch (name, repository, isMain, branchedoff)
 VALUES (branch_name, repo_name, isMain, branchedoff);
 
 END; $$
@@ -47,11 +47,19 @@ DELIMITER $$
 CREATE PROCEDURE create_repository(IN repoName VARCHAR(32), username VARCHAR(32))
 BEGIN
 INSERT INTO repository (name, creator) VALUES (repoName, username);
-CALL create_collaboration(username, repoName);
 END; $$
 
 DELIMITER ;
 
+DELIMITER $$
+DROP TRIGGER IF EXISTS insert_branch_trigger;
+CREATE TRIGGER insert_branch_trigger AFTER INSERT ON repository
+FOR EACH ROW
+BEGIN
+  INSERT INTO collaboration VALUES (NEW.creator, NEW.name);
+  INSERT INTO branch (name, repository, isMain, branchedoff) VALUES ("Main", NEW.name, TRUE, NULL);
+END $$
+DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS create_programmer;
@@ -85,7 +93,7 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS delete_repository;
 DELIMITER $$
-CREATE PROCEDURE delete_branch(IN repository_name VARCHAR(32))
+CREATE PROCEDURE delete_repository(IN repository_name VARCHAR(32))
 BEGIN
   DELETE FROM repository WHERE name = repository_name;
 END; $$
@@ -135,7 +143,9 @@ CREATE FUNCTION get_repository_count_for_programmer(username VARCHAR(32))
    RETURNS INT DETERMINISTIC
    CONTAINS SQL
 BEGIN
-SELECT COUNT(repository) FROM collaboration WHERE programmer = username;
+DECLARE repoCount INT;
+SELECT COUNT(repository) INTO repoCount FROM collaboration WHERE programmer = username;
+RETURN repoCount;
 END; $$
 DELIMITER ;
 
@@ -153,11 +163,9 @@ END; $$
 DELIMITER ;
 
 
-DROP FUNCTION IF EXISTS validate_login;
+DROP PROCEDURE IF EXISTS validate_login;
 DELIMITER $$
-CREATE FUNCTION validate_login(username VARCHAR(32), password VARCHAR(32))
-	RETURNS BOOL DETERMINISTIC
-	CONTAINS SQL
+CREATE PROCEDURE validate_login(username VARCHAR(32), password VARCHAR(32), OUT returnValue BOOLEAN)
     BEGIN
 
 	DECLARE correct_password VARCHAR(32);
@@ -165,11 +173,11 @@ CREATE FUNCTION validate_login(username VARCHAR(32), password VARCHAR(32))
     INTO correct_password;
     
     IF correct_password = password THEN
-		RETURN TRUE;
+		SELECT TRUE INTO returnValue;
 	ELSE
-		RETURN FALSE;
+		SELECT FALSE INTO returnValue;
 	END IF;
-	END $$
+    END $$
 
 DELIMITER ;
 
