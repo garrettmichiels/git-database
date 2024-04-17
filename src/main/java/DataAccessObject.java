@@ -18,7 +18,7 @@ public class DataAccessObject {
         CallableStatement stmt = connection.prepareCall("{CALL create_repository(?, ?)}");
         stmt.setString(1, repoName);
         stmt.setString(2, username);
-        ResultSet rs = stmt.executeQuery();
+        stmt.execute();
     }
 
     public void createBranch(String branchName, String repository, boolean isMain, String branchedOff) throws SQLException {
@@ -33,7 +33,7 @@ public class DataAccessObject {
         else {
             stmt.setString(4, branchedOff);
         }
-        ResultSet rs = stmt.executeQuery();
+        stmt.execute();
     }
 
     public void createProgrammer(String username, String password, boolean isManager) throws SQLException {
@@ -41,7 +41,7 @@ public class DataAccessObject {
         stmt.setString(1, username);
         stmt.setString(2, password);
         stmt.setBoolean(3, isManager);
-        ResultSet rs = stmt.executeQuery();
+        stmt.execute();
     }
 
     public int createCommit(String branchName, String repoName, String message) throws SQLException {
@@ -62,7 +62,7 @@ public class DataAccessObject {
         stmt.setString(4, fileName);
         stmt.setString(5, fileLanguage);
         stmt.setString(6, fileText);
-        ResultSet rs = stmt.executeQuery();
+        stmt.execute();
     }
 
     public void createTodo(String msg, String repoName) throws SQLException {
