@@ -2,7 +2,9 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -96,11 +98,11 @@ public class Main {
 
     public int getRepositorySelection() {
         while (true) {
-            ArrayList<String> repos = new ArrayList<String>();
+            List<String> repos = new ArrayList<>();
             try {
                 ResultSet rs = dao.getRepositoriesForUser(serviceUsername);
                 printMenu(Arrays.asList("create: create new repository","back: sign out as programmer","quit: quit Program","---------------", "Repositories:"));    
-                getListFromResultSet(rs);
+                repos = getListFromResultSet(rs);
             }
             catch (SQLException e) {
                 System.err.println("Error getting repositories: " + e.getMessage());
@@ -141,11 +143,11 @@ public class Main {
     public int getBranchSelection() {
         while(true) {
             System.out.println("You're in repository " + currentRepository);
-            ArrayList<String> branches = new ArrayList<String>();
+            List<String> branches = new ArrayList<>();
             try {
                 ResultSet rs = dao.getBranchesForRepo(currentRepository);
-                printMenu(Arrays.asList("create: create new branch", "rename: rename this repository", "delete: delete this repository", "todo: add a todo item to this repository", "back: back to repository selection","quit: quit Program","---------------", "Branches:"));              
-                getListFromResultSet(rs);
+                printMenu(Arrays.asList("create: create new branch", "rename: rename this repository", "delete: delete this repository", "todo: view todo items for this repository", "back: back to repository selection","quit: quit Program","---------------", "Branches:"));              
+                branches = getListFromResultSet(rs);
             }
             catch (SQLException e) {
                 System.err.println("Error getting branches: " + e.getMessage());
@@ -178,7 +180,7 @@ public class Main {
                         System.err.println("Error renaming repository: " + e.getMessage());
                         System.exit(1);
                     }
-
+                    break;
                 case "delete":
                     try {
                         dao.deleteRepository(currentRepository);
@@ -189,15 +191,11 @@ public class Main {
                     }
                     return BACK_MENU;
                 case "todo":
-                    System.out.println("Enter a message for the todo item: ");
-                    String msg = scanner.nextLine();
-                    try {
-                        dao.createTodo(msg, currentRepository);
+                    int todo_return = useTodos();
+                    if (todo_return == QUIT) {
+                        return QUIT;
                     }
-                    catch(SQLException e) {
-                        System.err.println("Error creating todo: " + e.getMessage());
-                        System.exit(1);
-                    }
+                    break;
                 case "back":
                     return BACK_MENU;
                 case "quit":
@@ -213,14 +211,67 @@ public class Main {
         }
     }
 
+    public void showTodoFromResultSet(ResultSet rs) throws SQLException {
+        while (rs.next()) {
+            int id = rs.getInt(1);
+            String msg = rs.getString(2);
+            System.out.printf("%d: %s \n", id, msg);
+        }
+    }
+
+    public int useTodos() {
+        while(true) {
+            System.out.println("You are looking at todo items in repository: "+currentRepository);
+            try {
+                ResultSet rs = dao.getBranchesForRepo(currentRepository);
+                printMenu(Arrays.asList("complete <number>: mark todo as completed", "create: create new todo", "back: back to repository selection","quit: quit Program","---------------", "Todo items:"));              
+                showTodoFromResultSet(rs);
+            }
+            catch (SQLException e) {
+                System.err.println("Error getting branches: " + e.getMessage());
+                System.exit(1);
+            }
+            // Prompt the user to select a Branch
+            System.out.print("Select a branch: ");
+            String todoSelection = scanner.next();
+            switch(todoSelection) {
+                case "complete":
+                    int id = scanner.nextInt();
+                    try {
+                        dao.completeTodo(id);
+                    }
+                    catch (SQLException e) {
+                        System.err.println("Error completing todo: " + e.getMessage());
+                        System.exit(1);
+                    }
+                    break;
+                case "create":
+                    System.out.println("Enter a message for the todo item: ");
+                    String msg = scanner.nextLine();
+                    try {
+                        dao.createTodo(msg, currentRepository);
+                    }
+                    catch(SQLException e) {
+                        System.err.println("Error creating todo: " + e.getMessage());
+                        System.exit(1);
+                    }
+                    break;
+                case "back":
+                    return BACK_MENU;
+                case "quit":
+                    return QUIT;
+            }
+        }
+    }
+
     public int getFileSelection() {
         while(true) {
             System.out.println("You're in branch: " + currentBranch);
-            ArrayList<String> files = new ArrayList<String>();
+            List<String> files;
             try {
                 ResultSet rs = dao.getFilesForBranch(currentBranch);
                 printMenu(Arrays.asList("create: create new file", "rename: rename this branch", "delete: delete this branch", "back: back to branches","quit: quit Program","---------------", "Files:"));    
-                getListFromResultSet(rs);
+                files = getListFromResultSet(rs);
             }
             catch (SQLException e) {
                 System.err.println("Error getting files: " + e.getMessage());
@@ -335,7 +386,6 @@ public static void main(String[] args) {
     String editor = "notepad"; // For Windows, change this to your preferred text editor
     String osName = System.getProperty("os.name").toLowerCase();
     if (osName.contains("mac")) {
-
         editor = "TextEdit";
     }
     String fileToEdit = "example.txt"; // Change this to the file you want to open

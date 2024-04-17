@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.sql.*;
 
 import java.sql.Connection;
@@ -136,6 +137,12 @@ public class DataAccessObject {
         stmt.setString(3, branchName);
         stmt.setString(4, repoName);
         stmt.executeQuery();
+    }
+
+    public void completeTodo(int id) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("{Call completeTodo(?)}");
+        stmt.setInt(1, id);
+        stmt.execute();
     }
 
     // DELETE
