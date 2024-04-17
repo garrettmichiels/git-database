@@ -2,29 +2,26 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.commons.cli.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-
-
-public class Main {
+public class Main { //extends JFrame implements ActionListener {
     int BACK_MENU = 2;
     int QUIT = 3;
     /** The name of the MySQL account to use */
@@ -45,9 +42,11 @@ public class Main {
     private Boolean isProgramRunning = true;
 
 
-    // Username and password for the inside databse
+    // Username and password for the inside database
     private String serviceUsername;
     private String servicePassword;
+
+    // Current repository, branch, and file of the user
     private String currentRepository;
     private String currentBranch;
     private String currentFile;
@@ -74,12 +73,13 @@ public class Main {
         //Get internal username and password
         scanner = new Scanner(System.in);
         System.out.print("Enter the username for the internal database: ");
-        serviceUsername = scanner.next();
+        serviceUsername = scanner.nextLine();
         System.out.print("Enter the password for the internal database: ");
-        servicePassword = scanner.next();
+        servicePassword = scanner.nextLine();
     }
 
     public void printMenu(List<String> lines) {
+        System.out.println();
         for (String s: lines) {
             System.out.println(s);
         }
@@ -92,6 +92,7 @@ public class Main {
             String currentObject = rs.getString(1);
             list.add(currentObject);
             System.out.printf("%d: %s \n", counter, currentObject);
+            counter++;
         }
         return list;
     }
@@ -110,12 +111,12 @@ public class Main {
             }
 
             // Prompt the user to select a repository
-            System.out.print("Select a repository: ");
-            String repositorySelection = scanner.next();
+            System.out.print("Select a repository or use a command: ");
+            String repositorySelection = scanner.nextLine();
             switch(repositorySelection) {
                 case "create":
                     System.out.print("Enter the name of the new repository: ");
-                    String newRepoName = scanner.next();
+                    String newRepoName = scanner.nextLine();
                     try {
                         dao.createRepository(newRepoName, serviceUsername);
                         currentRepository = newRepoName;
@@ -130,6 +131,10 @@ public class Main {
                 case "quit":
                     return QUIT;
                 default:
+                    if (!validateInput(repositorySelection, 1, repos.size())) {
+                        System.out.println("Invalid input. Please try again.");
+                        continue;
+                    }
                     currentRepository = repos.get(Integer.valueOf(repositorySelection) - 1);
                     int branch_return = getBranchSelection();
                     if (branch_return == QUIT) {
@@ -154,12 +159,13 @@ public class Main {
                 System.exit(1);
             }
             // Prompt the user to select a Branch
-            System.out.print("Select a branch: ");
-            String branchSelection = scanner.next();
+            System.out.print(currentRepository + " | Select a branch or use a command: ");
+            String branchSelection = scanner.nextLine();
             switch(branchSelection) {
                 case "create":
                     System.out.print("Enter the name of the new branch: ");
-                    String newBranchName = scanner.next();
+                    String newBranchName = scanner.nextLine();
+
                     try {
                         dao.createBranch(newBranchName, currentRepository, false, currentBranch);
                         //currentBranch = newBranchName;
@@ -171,7 +177,7 @@ public class Main {
                     break;
                 case "rename":
                     System.out.println("Enter the new name for this repository: ");
-                    String newRepoName = scanner.next();
+                    String newRepoName = scanner.nextLine();
                     try {
                         dao.renameRepository(currentRepository, newRepoName);
                         currentRepository = newRepoName; 
@@ -201,7 +207,11 @@ public class Main {
                 case "quit":
                     return QUIT;
                 default:
-                    currentRepository = branches.get(Integer.valueOf(branchSelection) - 1);
+                    if(!validateInput(branchSelection, 1, branches.size())) {
+                        System.out.println("Invalid input. Please try again.");
+                        continue;
+                    }
+                    currentBranch = branches.get(Integer.valueOf(branchSelection) - 1);
                     int file_return = getFileSelection();
                     if (file_return == QUIT) {
                         return QUIT;
@@ -223,22 +233,28 @@ public class Main {
         while(true) {
             System.out.println("You are looking at todo items in repository: "+currentRepository);
             try {
-                ResultSet rs = dao.getBranchesForRepo(currentRepository);
-                printMenu(Arrays.asList("complete <number>: mark todo as completed", "create: create new todo", "back: back to repository selection","quit: quit Program","---------------", "Todo items:"));              
+                ResultSet rs = dao.getTodosForRepo(currentRepository);
+                printMenu(Arrays.asList("complete: mark todo as completed", "create: create new todo", "back: back to repository selection","quit: quit Program","---------------", "Todo items:"));              
                 showTodoFromResultSet(rs);
             }
             catch (SQLException e) {
                 System.err.println("Error getting branches: " + e.getMessage());
                 System.exit(1);
             }
-            // Prompt the user to select a Branch
-            System.out.print("Select a branch: ");
-            String todoSelection = scanner.next();
+            
+            System.out.print(currentRepository + " | Enter one of the above commands: ");
+            String todoSelection = scanner.nextLine();
             switch(todoSelection) {
                 case "complete":
-                    int id = scanner.nextInt();
+                    System.out.print("Enter the number of the todo to mark as completed: ");
+
                     try {
+                        int id = Integer.valueOf(scanner.nextLine());
                         dao.completeTodo(id);
+                    }
+                    catch (NumberFormatException e) {
+                        System.out.println("Sorry that wasn't a valid integer");
+                        continue;
                     }
                     catch (SQLException e) {
                         System.err.println("Error completing todo: " + e.getMessage());
@@ -260,6 +276,9 @@ public class Main {
                     return BACK_MENU;
                 case "quit":
                     return QUIT;
+                default:
+                    System.out.println("Invalid input. Please try again.");
+                    continue;
             }
         }
     }
@@ -267,9 +286,9 @@ public class Main {
     public int getFileSelection() {
         while(true) {
             System.out.println("You're in branch: " + currentBranch);
-            List<String> files;
+            List<String> files =  new ArrayList<>();
             try {
-                ResultSet rs = dao.getFilesForBranch(currentBranch);
+                ResultSet rs = dao.getFilesForBranch(currentBranch, currentRepository);
                 printMenu(Arrays.asList("create: create new file", "rename: rename this branch", "delete: delete this branch", "back: back to branches","quit: quit Program","---------------", "Files:"));    
                 files = getListFromResultSet(rs);
             }
@@ -277,14 +296,14 @@ public class Main {
                 System.err.println("Error getting files: " + e.getMessage());
                 System.exit(1);
             }
-            System.out.print("Select a file: ");
-            String fileSelection = scanner.next();
+            System.out.print(currentRepository + "-" + currentBranch + " | Select a file or use a command: ");
+            String fileSelection = scanner.nextLine();
             switch(fileSelection) {
                 case "create":
                     System.out.print("Enter the name of the new file: ");
-                    String newFileName = scanner.next();
+                    String newFileName = scanner.nextLine();
                     try {
-                        dao.createRepository(newFileName, serviceUsername);
+                        dao.createFile(currentBranch, currentRepository, newFileName, "message", "fileLanguage", "fileText");
                         currentFile = newFileName;
                     }
                     catch (SQLException e) {
@@ -294,7 +313,7 @@ public class Main {
                     break;
                 case "rename":
                     System.out.println("Enter the new name for this branch: ");
-                    String newBranchName = scanner.next();
+                    String newBranchName = scanner.nextLine();
                     try {
                         dao.renameBranch(currentBranch, newBranchName, currentRepository);
                         currentBranch = newBranchName; 
@@ -303,12 +322,77 @@ public class Main {
                         System.err.println("Error renaming branch: " + e.getMessage());
                         System.exit(1);
                     }
+                    break;
                 case "delete":
                     try {
                         dao.deleteBranch(currentBranch, currentRepository);
+                        currentBranch = "";
                     }
                     catch (SQLException e) {
-                        System.err.println("Error deleting branch: " + e.getMessage());
+                        if ("45000".equals(e.getSQLState())) {
+                            System.out.println("Cannot delete the main branch");
+                        }
+                        else {
+                            System.err.println("Error deleting branch: " + e.getMessage());
+                            System.exit(1);
+                        }
+                    }
+                    return BACK_MENU;
+                case "back":
+                    return BACK_MENU;
+                case "quit":
+                    return QUIT;
+                default:
+                    if(!validateInput(fileSelection, 1, files.size())) {
+                        System.out.println("Invalid input. Please try again.");
+                        continue;
+                    }
+                    currentFile = files.get(Integer.valueOf(fileSelection) - 1);
+                    // TODO edit file
+                    int menu_option = selectedFileMenu();
+                    if (menu_option == QUIT) {
+                        return QUIT;
+                    }
+                    break;
+            }
+        }
+    }
+
+    public int selectedFileMenu() {
+        while(true) {
+            printMenu(Arrays.asList("edit: edit/view this file", "rename: rename this file", "delete: delete this file", "back: back to files","quit: quit Program","---------------"));    
+            System.out.print(currentRepository + "-" + currentBranch + "-" + currentFile + " | Select a command: ");
+            String fileSelection = scanner.nextLine();
+            switch(fileSelection) {
+                case "edit":
+                TextEditor fileEditor = new TextEditor();
+                fileEditor.setVisible(true);
+
+                while (!fileEditor.isSaved() ) {
+                    // Wait for the user to save the file
+                }
+                String fileContents = fileEditor.getText();
+                fileEditor.dispose();
+                
+                    break;
+                case "rename":
+                    System.out.println("Enter the new name for this file: ");
+                    String newFileName = scanner.nextLine();
+                    try {
+                        dao.renameFile(currentFile, newFileName, currentBranch, currentRepository);
+                        currentFile = newFileName;
+                    }
+                    catch (SQLException e) {
+                        System.err.println("Error renaming file: " + e.getMessage());
+                        System.exit(1);
+                    }
+                    break;
+                case "delete":
+                    try {
+                        dao.deleteFile(currentFile, currentBranch, currentRepository);
+                    }
+                    catch (SQLException e) {
+                        System.err.println("Error deleting file: " + e.getMessage());
                         System.exit(1);
                     }
                     return BACK_MENU;
@@ -317,14 +401,24 @@ public class Main {
                 case "quit":
                     return QUIT;
                 default:
-                    currentRepository = files.get(Integer.valueOf(fileSelection) - 1);
-                    // TODO edit file
-                    break;
+                    System.out.println("Invalid input. Please try again.");
+                    continue;
             }
         }
     }
 
-
+    public boolean validateInput(String input, int min, int max) {
+        try {
+            int selection = Integer.parseInt(input);
+            if (selection < min || selection > max) {
+                return false;
+            }
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
 
     public void run() {
         try {
@@ -338,21 +432,21 @@ public class Main {
         // Create a new instance of the DataAccessObject
         dao = new DataAccessObject(connection);
 
-
         //Get internal username and password
         boolean logging_in = true;
         while (logging_in) {
             scanner = new Scanner(System.in);
             System.out.print("Enter the username for the internal database: ");
-            serviceUsername = scanner.next();
+            serviceUsername = scanner.nextLine();
             System.out.print("Enter the password for the internal database: ");
-            servicePassword = scanner.next();
+            servicePassword = scanner.nextLine();
             try {
             while (!dao.validateLogin(serviceUsername, servicePassword)) {
                     System.out.println("Login failed");
                     getUserLogin();
                 }
                 System.out.println("Login successful!");
+                isProgramRunning = true;
             }
             catch (SQLException e) {
                 System.err.println("Error validating login: " + e.getMessage());
@@ -382,24 +476,8 @@ public class Main {
     }
 
 public static void main(String[] args) {
-    System.out.println("Hello world!");
-    String editor = "notepad"; // For Windows, change this to your preferred text editor
-    String osName = System.getProperty("os.name").toLowerCase();
-    if (osName.contains("mac")) {
-        editor = "TextEdit";
-    }
-    String fileToEdit = "example.txt"; // Change this to the file you want to open
-
-            // Start the process
-    ProcessBuilder processBuilder = new ProcessBuilder(editor, fileToEdit);
-    try {
-    processBuilder.start();
-    }
-    catch(IOException e) {
-        System.out.println(e.getMessage());
-    }
     Main app = new Main();
-
+    
     // Create a new command line parser
     CommandLineParser parser = new DefaultParser();
     Options options = new Options();

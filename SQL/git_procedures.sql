@@ -19,6 +19,10 @@ DROP PROCEDURE IF EXISTS create_branch;
 DELIMITER $$
 CREATE PROCEDURE create_branch(IN branch_name VARCHAR(32), repo_name VARCHAR(32), isMain BOOL, branchedoff VARCHAR(32))
 BEGIN
+IF
+  branchedoff IS NULL THEN
+  SELECT name INTO branchedoff FROM branch WHERE repository = repo_name AND isMain = TRUE;
+END IF;
 INSERT INTO branch (name, repository, isMain, branchedoff)
 VALUES (branch_name, repo_name, isMain, branchedoff);
 
@@ -39,10 +43,11 @@ DROP PROCEDURE IF EXISTS create_repository;
 DELIMITER $$
 CREATE PROCEDURE create_repository(IN repoName VARCHAR(32), username VARCHAR(32))
 BEGIN
-INSERT INTO repository (name, creator) VALUES (repoName, username);
+INSERT INTO repository (name, creator, dateCreated) VALUES (repoName, username, CURRENT_DATE);
 END $$
 
 DELIMITER ;
+
 
 DELIMITER $$
 DROP TRIGGER IF EXISTS insert_branch_trigger;
@@ -67,10 +72,10 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS create_todo;
 DELIMITER $$
-CREATE PROCEDURE create_todo(IN message TEXT, repository VARCHAR(32), completed BOOL)
+CREATE PROCEDURE create_todo(IN message TEXT, repository VARCHAR(32))
 BEGIN
 INSERT INTO todo_item (message, repository, completed)
-VALUES (message, repository, completed);
+VALUES (message, repository, FALSE);
 END $$
 
 DELIMITER ;
@@ -89,19 +94,25 @@ DROP PROCEDURE IF EXISTS get_branches_in_repo;
 DELIMITER $$
 CREATE PROCEDURE get_branches_in_repo(repo VARCHAR(32))
     BEGIN
-		SELECT name FROM branch WHERE branch.repository = repo;
+		SELECT name FROM branch WHERE repository = repo;
 	END $$
 
 DELIMITER ;
+
+
+
 
 DROP PROCEDURE IF EXISTS get_files_in_branch;
 DELIMITER $$
-CREATE PROCEDURE get_files_in_branch(branch VARCHAR(32))
+CREATE PROCEDURE get_files_in_branch(branch_name VARCHAR(32), repository_name VARCHAR(32))
     BEGIN
-		SELECT name FROM file WHERE branch.repository = repo;
+      SELECT name, commit FROM file WHERE file.commit IN 
+      (SELECT id FROM commit WHERE commit.branch = branch_name AND commit.repository = repository_name);
 	END $$
 
 DELIMITER ;
+
+
 -- Returns the repostiories associated with a programmer
 DROP PROCEDURE IF EXISTS get_repositories_for_programmer;
 DELIMITER $$
@@ -125,7 +136,7 @@ RETURN repoCount;
 END $$
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS get_todos_for_repository
+DROP PROCEDURE IF EXISTS get_todos_for_repository;
 DELIMITER $$
 CREATE PROCEDURE get_todos_for_repository(repo_name VARCHAR(32))
 BEGIN
@@ -154,11 +165,21 @@ END $$
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS complete_todo;
+DELIMITER $$
+CREATE PROCEDURE complete_todo(IN todoId INT)
+BEGIN
+UPDATE todo_item SET completed = TRUE WHERE id = todoId;
+END $$
+
+DELIMITER ;
+
+
 DROP PROCEDURE IF EXISTS rename_branch;
 DELIMITER $$
-CREATE PROCEDURE rename_branch(IN old_branch_name VARCHAR(32), new_branch_name VARCHAR(32))
+CREATE PROCEDURE rename_branch(IN old_branch_name VARCHAR(32), new_branch_name VARCHAR(32), repoName VARCHAR(32))
 BEGIN
-UPDATE branch SET name = new_branch_name WHERE name = old_branch_name;
+UPDATE branch SET name = new_branch_name WHERE name = old_branch_name AND repository = repoName;
 END $$
 
 DELIMITER ;
@@ -173,6 +194,16 @@ END $$
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS update_file_contents;
+DELIMITER $$
+CREATE PROCEDURE update_file_contents(file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), file_language VARCHAR(32), file_text VARCHAR(256))
+BEGIN
+UPDATE file SET text = file_text, language = file_language WHERE name = old_file_name 
+AND commit IN (SELECT id FROM commit WHERE branch = branch_name AND repository = repo_name);
+END $$
+
+DELIMITER ;
+
 
 -- DELETE ------------------------------------------------------------------
 
@@ -180,6 +211,16 @@ DROP PROCEDURE IF EXISTS delete_branch;
 DELIMITER $$
 CREATE PROCEDURE delete_branch(IN branch_name VARCHAR(32), IN repository_name VARCHAR(32))
 BEGIN
+  DECLARE isMainBranch BOOL;
+  SELECT isMain INTO isMainBranch FROM branch WHERE name = branch_name AND repository = repository_name;
+  IF
+    isMainBranch THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Cannot delete main branch';
+  ELSE
+    DELETE FROM branch WHERE name = branch_name AND repository = repository_name;
+  END IF;
+
   DELETE FROM branch WHERE name = branch_name AND repository = repository_name;
 END $$
 
@@ -233,6 +274,10 @@ BEGIN
   DECLARE commit_id INT;
   SELECT commit.id INTO commit_id FROM file JOIN commit ON file.commit = commit.id
   WHERE file.name = file_name AND commit.branch = branch_name AND commit.repository = repo_name;
+  
+  DELETE FROM file WHERE name = file_name AND commit = commit_id;
+  
+  DELETE FROM commit WHERE id = commit_id;
 END $$
 
 DELIMITER ;

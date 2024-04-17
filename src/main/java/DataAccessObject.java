@@ -30,7 +30,13 @@ public class DataAccessObject {
         stmt.setString(1, branchName);
         stmt.setString(2, repository);
         stmt.setBoolean(3, isMain);
-        stmt.setString(4, branchedOff);
+
+        if (branchedOff == "") {
+            stmt.setNull(4, Types.VARCHAR);
+        }
+        else {
+            stmt.setString(4, branchedOff);
+        }
         ResultSet rs = stmt.executeQuery();
     }
 
@@ -52,12 +58,14 @@ public class DataAccessObject {
         return rs.getInt(1);
     }
 
-    public void createFile(String fileName, String commitId, String fileLanguage, String content) throws SQLException {
-        CallableStatement stmt = connection.prepareCall("{CALL create_file(?, ?, ?, ?)}");
-        stmt.setString(1, fileName);
-        stmt.setString(2, commitId);
-        stmt.setString(3, fileLanguage);
-        stmt.setString(4, content);
+    public void createFile(String branchName, String repoName, String fileName, String message, String fileLanguage, String fileText) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("{CALL create_commit_file(?, ?, ?, ?, ?, ?)}");
+        stmt.setString(1, branchName);
+        stmt.setString(2, repoName);
+        stmt.setString(3, message);
+        stmt.setString(4, fileName);
+        stmt.setString(5, fileLanguage);
+        stmt.setString(6, fileText);
         ResultSet rs = stmt.executeQuery();
     }
 
@@ -67,6 +75,11 @@ public class DataAccessObject {
         stmt.setString(2, repoName);
         stmt.executeQuery();
     }
+    public ResultSet getTodosForRepo(String repoName) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("{CALL get_todos_for_repository(?)}");
+        stmt.setString(1, repoName);
+        return stmt.executeQuery();
+    }
 
 
 
@@ -74,9 +87,10 @@ public class DataAccessObject {
     // READ
 
 
-    public ResultSet getFilesForBranch(String branchName) throws SQLException {
-        CallableStatement stmt = connection.prepareCall("{CALL get_files_in_branch(?)}");
+    public ResultSet getFilesForBranch(String branchName, String repoName) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("{CALL get_files_in_branch(?, ?)}");
         stmt.setString(1, branchName);
+        stmt.setString(2, repoName);
         return stmt.executeQuery();
     }
 
@@ -108,7 +122,7 @@ public class DataAccessObject {
         stmt.registerOutParameter(3, Types.TINYINT);
         stmt.execute();
         boolean result = stmt.getBoolean(3);
-        System.out.println(result);
+        // System.out.println(result);
         return result;
     }
 
@@ -140,7 +154,7 @@ public class DataAccessObject {
     }
 
     public void completeTodo(int id) throws SQLException {
-        CallableStatement stmt = connection.prepareCall("{Call completeTodo(?)}");
+        CallableStatement stmt = connection.prepareCall("{Call complete_todo(?)}");
         stmt.setInt(1, id);
         stmt.execute();
     }
