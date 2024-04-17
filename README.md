@@ -7,6 +7,19 @@ This is the final project for Database Design CS3200. This is a simplified versi
 Run the Schema in your MySQL server. The schema dump file is called git.sql
 If the procedures are not populated, run git_procedure.sql
 
+### Design
+
+Our original schema design
+<!-- ![Original schema](image_url) -->
+
+
+Our current schema design
+<!-- ![Current schema](image_url) -->
+
+
+Our user interaction diagram
+<!-- ![User Flow Diagram](image_url) -->
+
 ## Running The Project
 To run the program, navigate to the file with the project jar and type the following into the terminal:
 Username and password are the passwords for your local MySQL server.
