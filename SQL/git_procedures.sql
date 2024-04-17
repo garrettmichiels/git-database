@@ -1,28 +1,19 @@
 use git;
 
-DROP PROCEDURE IF EXISTS create_file;
+-- CREATE ------------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS create_commit_file;
 DELIMITER $$
-CREATE PROCEDURE create_file(IN file_text TEXT, file_name VARCHAR(32), commit_id INT, file_language VARCHAR(32))
+CREATE PROCEDURE create_commit_file(IN branch_name VARCHAR(32), repo_name VARCHAR(32), message VARCHAR(128), file_name VARCHAR(32), file_language VARCHAR(32), file_text VARCHAR(256))
 BEGIN
+INSERT INTO commit (branch, repository, message, time)
+VALUES (branch_name, repo_name, message, CURRENT_TIMESTAMP);
+
 INSERT INTO file (name, commit, language, text)
-VALUES (file_name, commit_id, file_language, file_text);
-END; $$
+VALUES (file_name, LAST_INSERTED_ID(), file_language, file_text);
+END $$
 
 DELIMITER ;
-
-
--- DROP PROCEDURE IF EXISTS create_commit;
--- DELIMITER $$
--- CREATE PROCEDURE create_commit(IN branch_name VARCHAR(32), repo_name VARCHAR(32), message VARCHAR(128))
--- BEGIN
--- INSERT INTO commit (branch, repository, message, time)
--- VALUES (branch_name, repo_name, message, CURRENT_TIMESTAMP);
--- RETURN LAST_INSERTED_ID();
--- END; $$
-
--- DELIMITER ;
-
--- CREATE ------------------------------------------------------------------
 
 DROP PROCEDURE IF EXISTS create_branch;
 DELIMITER $$
@@ -31,7 +22,7 @@ BEGIN
 INSERT INTO branch (name, repository, isMain, branchedoff)
 VALUES (branch_name, repo_name, isMain, branchedoff);
 
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -41,7 +32,7 @@ DELIMITER $$
 CREATE PROCEDURE create_collaboration(IN username VARCHAR(32), repoName VARCHAR(32))
 BEGIN
 INSERT INTO collaboration (programmer, repository) VALUES (username, repoName);
-END; $$
+END $$
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS create_repository;
@@ -49,7 +40,7 @@ DELIMITER $$
 CREATE PROCEDURE create_repository(IN repoName VARCHAR(32), username VARCHAR(32))
 BEGIN
 INSERT INTO repository (name, creator) VALUES (repoName, username);
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -70,7 +61,7 @@ CREATE PROCEDURE create_programmer(IN username VARCHAR(32), password VARCHAR(32)
 BEGIN
 INSERT INTO programmer (username, password, isManager)
 VALUES (username, password, isManager);
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -80,7 +71,7 @@ CREATE PROCEDURE create_todo(IN message TEXT, repository VARCHAR(32), completed 
 BEGIN
 INSERT INTO todo_item (message, repository, completed)
 VALUES (message, repository, completed);
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -117,7 +108,8 @@ DELIMITER $$
 CREATE PROCEDURE get_repositories_for_programmer(IN username VARCHAR(32))
 BEGIN
 SELECT repository FROM collaboration WHERE programmer = username;
-END; $$
+END $$
+
 DELIMITER ;
 
 -- Returns the number of repostiories associated with a programmer
@@ -130,9 +122,17 @@ BEGIN
 DECLARE repoCount INT;
 SELECT COUNT(repository) INTO repoCount FROM collaboration WHERE programmer = username;
 RETURN repoCount;
-END; $$
+END $$
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS get_todos_for_repository
+DELIMITER $$
+CREATE PROCEDURE get_todos_for_repository(repo_name VARCHAR(32))
+BEGIN
+SELECT id, message FROM todo_item WHERE repository = repo_name AND completed = FALSE;
+END $$
+
+DELIMITER ;
 
 -- UPDATES ------------------------------------------------------------------
 
@@ -141,7 +141,7 @@ DELIMITER $$
 CREATE PROCEDURE rename_repository(IN oldRepoName VARCHAR(32), newRepoName VARCHAR(32))
 BEGIN
 UPDATE repository SET name = newRepoName WHERE name = oldRepoName;
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -150,7 +150,7 @@ DELIMITER $$
 CREATE PROCEDURE update_todo(IN todoId INT, IN message TEXT, IN completed BOOL)
 BEGIN
 UPDATE todo_item SET message = message, completed = completed WHERE id = todoId;
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -159,7 +159,7 @@ DELIMITER $$
 CREATE PROCEDURE rename_branch(IN old_branch_name VARCHAR(32), new_branch_name VARCHAR(32))
 BEGIN
 UPDATE branch SET name = new_branch_name WHERE name = old_branch_name;
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -169,11 +169,9 @@ CREATE PROCEDURE rename_file(IN old_file_name VARCHAR(32), new_file_name VARCHAR
 BEGIN
 UPDATE file SET name = new_file_name WHERE name = old_file_name 
 AND commit IN (SELECT id FROM commit WHERE branch = branch_name AND repository = repo_name);
-END; $$
+END $$
 
 DELIMITER ;
-
-
 
 
 -- DELETE ------------------------------------------------------------------
@@ -183,7 +181,7 @@ DELIMITER $$
 CREATE PROCEDURE delete_branch(IN branch_name VARCHAR(32), IN repository_name VARCHAR(32))
 BEGIN
   DELETE FROM branch WHERE name = branch_name AND repository = repository_name;
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -193,7 +191,7 @@ DELIMITER $$
 CREATE PROCEDURE delete_repository(IN repository_name VARCHAR(32))
 BEGIN
   DELETE FROM repository WHERE name = repository_name;
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -203,7 +201,7 @@ DELIMITER $$
 CREATE PROCEDURE delete_todo(IN todoId INT)
 BEGIN
   DELETE FROM todo_item WHERE id = todoId;
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -213,7 +211,8 @@ DELIMITER $$
 CREATE PROCEDURE delete_programmer(IN username VARCHAR(32))
 BEGIN
   DELETE FROM programmer WHERE username = username;
-END; $$
+END $$
+
 DELIMITER ;
 
 
@@ -222,7 +221,7 @@ DELIMITER $$
 CREATE PROCEDURE delete_commit(IN commit_id INT)
 BEGIN
   DELETE FROM commit WHERE id = commit_id;
-END; $$
+END $$
 DELIMITER ;
 
 
@@ -234,7 +233,7 @@ BEGIN
   DECLARE commit_id INT;
   SELECT commit.id INTO commit_id FROM file JOIN commit ON file.commit = commit.id
   WHERE file.name = file_name AND commit.branch = branch_name AND commit.repository = repo_name;
-END; $$
+END $$
 
 DELIMITER ;
 
@@ -244,7 +243,7 @@ DELIMITER $$
 CREATE PROCEDURE delete_todo(todo_id INT)
 BEGIN
 	DELETE FROM todo_item WHERE id = todo_id;
-END; $$
+END $$
 
 DELIMITER ;
 
