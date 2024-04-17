@@ -126,6 +126,17 @@ public class DataAccessObject {
         return result;
     }
 
+    public String getFileContents(String currentFile, String currentBranch, String currentRepository) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("{CALL get_file_contents(?, ?, ?, ?)}");
+        stmt.setString(1, currentFile);
+        stmt.setString(2, currentBranch);
+        stmt.setString(3, currentRepository);
+        stmt.registerOutParameter(4, Types.VARCHAR);
+        stmt.execute();
+        String result = stmt.getString(4);
+        return result;
+    }
+
 
     // UPDATE
 
@@ -158,6 +169,17 @@ public class DataAccessObject {
         stmt.setInt(1, id);
         stmt.execute();
     }
+
+    public void editFile(String filename, String newText, String commitMessage, String branchName, String repoName) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("{Call edit_file(?, ?, ?, ?, ?)}");
+        stmt.setString(1, filename);
+        stmt.setString(2, newText);
+        stmt.setString(3, commitMessage);
+        stmt.setString(4, branchName);
+        stmt.setString(5, repoName);
+        stmt.execute();
+    }
+
 
     // DELETE
 

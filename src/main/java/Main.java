@@ -300,10 +300,12 @@ public class Main { //extends JFrame implements ActionListener {
             String fileSelection = scanner.nextLine();
             switch(fileSelection) {
                 case "create":
-                    System.out.print("Enter the name of the new file: ");
+                    System.out.println("Enter the name of the new file: ");
                     String newFileName = scanner.nextLine();
+                    System.out.println("Enter the programming language used in the file: ");
+                    String language = scanner.nextLine();
                     try {
-                        dao.createFile(currentBranch, currentRepository, newFileName, "message", "fileLanguage", "fileText");
+                        dao.createFile(currentBranch, currentRepository, newFileName, "message", language, "fileText");
                         currentFile = newFileName;
                     }
                     catch (SQLException e) {
@@ -365,15 +367,31 @@ public class Main { //extends JFrame implements ActionListener {
             String fileSelection = scanner.nextLine();
             switch(fileSelection) {
                 case "edit":
-                TextEditor fileEditor = new TextEditor();
-                fileEditor.setVisible(true);
-
-                while (!fileEditor.isSaved() ) {
-                    // Wait for the user to save the file
-                }
-                String fileContents = fileEditor.getText();
-                fileEditor.dispose();
-                
+                    String originalFileContents = "";
+                    try {
+                        originalFileContents = dao.getFileContents(currentFile, currentBranch, currentRepository);
+                    }
+                    catch (SQLException e) {
+                        System.err.println("Error getting file contents: " + e.getMessage());
+                        System.exit(1);
+                    }
+                    TextEditor fileEditor = new TextEditor();
+                    fileEditor.setText(originalFileContents);
+                    fileEditor.setVisible(true);
+                    while (!fileEditor.isSaved() ) {
+                        // Wait for the user to save the file
+                    }
+                    String fileContents = fileEditor.getText();
+                    fileEditor.dispose();
+                    System.out.println("Enter a commit message: ");
+                    String commitMessage = scanner.nextLine();
+                    try {
+                        dao.editFile(currentFile, fileContents, commitMessage, currentBranch, currentRepository);
+                    }
+                    catch (SQLException e) {
+                        System.err.println("Error editing file: " + e.getMessage());
+                        System.exit(1);
+                    }
                     break;
                 case "rename":
                     System.out.println("Enter the new name for this file: ");
