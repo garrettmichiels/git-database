@@ -1,10 +1,11 @@
--- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
+CREATE DATABASE  IF NOT EXISTS `git` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `git`;
+-- MySQL dump 10.13  Distrib 8.0.36, for macos14 (arm64)
 --
 -- Host: localhost    Database: git
 -- ------------------------------------------------------
--- Server version	8.0.36
-CREATE DATABASE IF NOT EXISTS git;
-use git;
+-- Server version	8.3.0
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -43,7 +44,7 @@ CREATE TABLE `branch` (
 
 LOCK TABLES `branch` WRITE;
 /*!40000 ALTER TABLE `branch` DISABLE KEYS */;
-INSERT INTO `branch` VALUES ('branch1','repo1','2024-04-15',1,'mainrepo1'),('mainrepo1','repo1','2024-04-15',1,NULL);
+INSERT INTO `branch` VALUES ('branch1','repo1','2024-04-15',1,'mainrepo1'),('feature branch','SQL Project',NULL,0,'Main'),('Main','Hello Pim',NULL,1,NULL),('Main','Mungus',NULL,1,NULL),('Main','SQL Project',NULL,1,NULL),('Main','Test Repo',NULL,1,NULL),('Main','The Hello Project',NULL,1,NULL),('mainrepo1','repo1','2024-04-15',1,NULL);
 /*!40000 ALTER TABLE `branch` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -70,6 +71,7 @@ CREATE TABLE `collaboration` (
 
 LOCK TABLES `collaboration` WRITE;
 /*!40000 ALTER TABLE `collaboration` DISABLE KEYS */;
+INSERT INTO `collaboration` VALUES ('test','Hello Jimmy Fallon'),('MrFrog','Hello Pim'),('test','Hello Pim'),('Jawn','Mungus'),('test','Mungus'),('test','repo1'),('MrBoss','SQL Project'),('test','Test Repo'),('MrFrog','The Hello Project'),('test','The Return Of MrFrog');
 /*!40000 ALTER TABLE `collaboration` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,7 +93,7 @@ CREATE TABLE `commit` (
   KEY `commit_ibfk_2` (`repository`),
   CONSTRAINT `commit_ibfk_1` FOREIGN KEY (`branch`) REFERENCES `branch` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `commit_ibfk_2` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -100,6 +102,7 @@ CREATE TABLE `commit` (
 
 LOCK TABLES `commit` WRITE;
 /*!40000 ALTER TABLE `commit` DISABLE KEYS */;
+INSERT INTO `commit` VALUES (1,'Main','SQL Project','Create readme','01:19:33'),(2,'Main','SQL Project','Create readme','01:21:17'),(3,'feature branch','SQL Project','Create readme','01:21:41');
 /*!40000 ALTER TABLE `commit` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -127,6 +130,7 @@ CREATE TABLE `file` (
 
 LOCK TABLES `file` WRITE;
 /*!40000 ALTER TABLE `file` DISABLE KEYS */;
+INSERT INTO `file` VALUES ('README',2,'markdown','#some info'),('README',3,'markdown','#This is a feature branch');
 /*!40000 ALTER TABLE `file` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -151,7 +155,7 @@ CREATE TABLE `programmer` (
 
 LOCK TABLES `programmer` WRITE;
 /*!40000 ALTER TABLE `programmer` DISABLE KEYS */;
-INSERT INTO `programmer` VALUES ('rcurcio','pword',0);
+INSERT INTO `programmer` VALUES ('Charlie','uhh',0),('Jawn','delco',0),('MrBoss','hi',1),('MrFrog','hello',1),('Pim','smile',0),('rcurcio','pword',0),('Shrimpi','Shrimpina',0),('Shrimpina','Shrimpi',0),('test','test',1);
 /*!40000 ALTER TABLE `programmer` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -179,7 +183,7 @@ CREATE TABLE `repository` (
 
 LOCK TABLES `repository` WRITE;
 /*!40000 ALTER TABLE `repository` DISABLE KEYS */;
-INSERT INTO `repository` VALUES ('repo1','2024-04-15','2024-04-15','rcurcio');
+INSERT INTO `repository` VALUES ('Hello Jimmy Fallon',NULL,NULL,'MrFrog'),('Hello Pim',NULL,NULL,'MrFrog'),('Mungus',NULL,NULL,'Jawn'),('repo1','2024-04-15','2024-04-15','rcurcio'),('SQL Project',NULL,NULL,'MrBoss'),('Test Repo',NULL,NULL,'test'),('The Hello Project',NULL,NULL,'MrFrog'),('The Return Of MrFrog',NULL,NULL,'MrFrog');
 /*!40000 ALTER TABLE `repository` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -198,7 +202,7 @@ CREATE TABLE `todo_item` (
   PRIMARY KEY (`id`),
   KEY `repository` (`repository`),
   CONSTRAINT `todo_item_ibfk_1` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -207,6 +211,7 @@ CREATE TABLE `todo_item` (
 
 LOCK TABLES `todo_item` WRITE;
 /*!40000 ALTER TABLE `todo_item` DISABLE KEYS */;
+INSERT INTO `todo_item` VALUES (1,'Make some people smile!','SQL Project',0),(2,'Add scripts for next season','The Hello Project',0),(3,'Add scripts for next season','The Return of MrFrog',0);
 /*!40000 ALTER TABLE `todo_item` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -219,4 +224,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-15 22:28:44
+-- Dump completed on 2024-04-16 21:33:30

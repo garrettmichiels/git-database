@@ -10,7 +10,7 @@ INSERT INTO commit (branch, repository, message, time)
 VALUES (branch_name, repo_name, message, CURRENT_TIMESTAMP);
 
 INSERT INTO file (name, commit, language, text)
-VALUES (file_name, LAST_INSERTED_ID(), file_language, file_text);
+VALUES (file_name, LAST_INSERT_ID(), file_language, file_text);
 END $$
 
 DELIMITER ;
