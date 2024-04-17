@@ -144,7 +144,7 @@ public class Main {
             ArrayList<String> branches = new ArrayList<String>();
             try {
                 ResultSet rs = dao.getBranchesForRepo(currentRepository);
-                printMenu(Arrays.asList("create: create new branch", "rename: rename this repository", "delete: delete this repository", "back: back to repository selection","quit: quit Program","---------------", "Branches:"));              
+                printMenu(Arrays.asList("create: create new branch", "rename: rename this repository", "delete: delete this repository", "todo: add a todo item to this repository", "back: back to repository selection","quit: quit Program","---------------", "Branches:"));              
                 getListFromResultSet(rs);
             }
             catch (SQLException e) {
@@ -175,7 +175,7 @@ public class Main {
                         currentRepository = newRepoName; 
                     }
                     catch (SQLException e) {
-                        System.err.println("Error deleting repository: " + e.getMessage());
+                        System.err.println("Error renaming repository: " + e.getMessage());
                         System.exit(1);
                     }
 
@@ -188,6 +188,16 @@ public class Main {
                         System.exit(1);
                     }
                     return BACK_MENU;
+                case "todo":
+                    System.out.println("Enter a message for the todo item: ");
+                    String msg = scanner.nextLine();
+                    try {
+                        dao.createTodo(msg, currentRepository);
+                    }
+                    catch(SQLException e) {
+                        System.err.println("Error creating todo: " + e.getMessage());
+                        System.exit(1);
+                    }
                 case "back":
                     return BACK_MENU;
                 case "quit":
@@ -236,10 +246,10 @@ public class Main {
                     String newBranchName = scanner.next();
                     try {
                         dao.renameBranch(currentBranch, newBranchName, currentRepository);
-                        currentRepository = newBranchName; 
+                        currentBranch = newBranchName; 
                     }
                     catch (SQLException e) {
-                        System.err.println("Error deleting repository: " + e.getMessage());
+                        System.err.println("Error renaming branch: " + e.getMessage());
                         System.exit(1);
                     }
                 case "delete":
@@ -247,10 +257,10 @@ public class Main {
                         dao.deleteBranch(currentBranch, currentRepository);
                     }
                     catch (SQLException e) {
-                        System.err.println("Error deleting repository: " + e.getMessage());
+                        System.err.println("Error deleting branch: " + e.getMessage());
                         System.exit(1);
                     }
-                return BACK_MENU;
+                    return BACK_MENU;
                 case "back":
                     return BACK_MENU;
                 case "quit":
