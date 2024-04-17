@@ -18,7 +18,7 @@ any of the usernames and passwords listed in the database under the programmers 
 There are several users including:
 
 Username    |    Password
-------------------------
+--------------------------
 test        |    test
 rcurcio     |    pword
 gm          |    pass
