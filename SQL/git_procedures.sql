@@ -125,6 +125,14 @@ RETURN repoCount;
 END $$
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS get_todos_for_repository
+DELIMITER $$
+CREATE PROCEDURE get_todos_for_repository(repo_name VARCHAR(32))
+BEGIN
+SELECT id, message FROM todo_item WHERE repository = repo_name AND completed = FALSE;
+END $$
+
+DELIMITER ;
 
 -- UPDATES ------------------------------------------------------------------
 
@@ -164,8 +172,6 @@ AND commit IN (SELECT id FROM commit WHERE branch = branch_name AND repository =
 END $$
 
 DELIMITER ;
-
-
 
 
 -- DELETE ------------------------------------------------------------------
