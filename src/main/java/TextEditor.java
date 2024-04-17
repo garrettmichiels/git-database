@@ -4,6 +4,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -12,10 +13,11 @@ import javax.swing.JTextField;
 public class TextEditor extends JFrame implements ActionListener {
     
         private String text = "";
+        private String title = "";
         private boolean saved = false;
 
         private final JTextArea textArea;
-        private final JTextField languageTextField;
+        private final JLabel languageTextField;
         private final JButton saveButton;
     
         public TextEditor() {
@@ -25,7 +27,7 @@ public class TextEditor extends JFrame implements ActionListener {
             // setLocationRelativeTo(null);
     
             textArea = new JTextArea(10, 30);
-            languageTextField = new JTextField(10);
+            languageTextField = new JLabel("");
             saveButton = new JButton("Save");
             saveButton.addActionListener(this);
     
@@ -44,6 +46,11 @@ public class TextEditor extends JFrame implements ActionListener {
         public void setText(String textToSet) {
             text = textToSet;
             textArea.setText(textToSet);
+        }
+
+        public void setLanguageFile(String language, String filename) {
+            title = filename + " - " + language;
+            languageTextField.setText(title);
         }
 
         public boolean isSaved() {

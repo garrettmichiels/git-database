@@ -263,7 +263,7 @@ public class Main { //extends JFrame implements ActionListener {
                     System.out.println("Enter the programming language used in the file: ");
                     String language = scanner.nextLine();
                     try {
-                        dao.createFile(currentBranch, currentRepository, newFileName, "message", language, "fileText");
+                        dao.createFile(currentBranch, currentRepository, newFileName, "message", language, "");
                         currentFile = newFileName;
                     }
                     catch (SQLException e) {
@@ -326,8 +326,10 @@ public class Main { //extends JFrame implements ActionListener {
             switch(fileSelection) {
                 case "edit":
                     String originalFileContents = "";
+                    String language = "";
                     try {
                         originalFileContents = dao.getFileContents(currentFile, currentBranch, currentRepository);
+                        language = dao.getFileLanguage(currentFile, currentBranch, currentRepository);
                     }
                     catch (SQLException e) {
                         System.err.println("Error getting file contents: " + e.getMessage());
@@ -336,6 +338,7 @@ public class Main { //extends JFrame implements ActionListener {
                     TextEditor fileEditor = new TextEditor();
                     fileEditor.setTitle(currentFile);
                     fileEditor.setText(originalFileContents);
+                    fileEditor.setLanguageFile(language, currentFile);
                     fileEditor.setVisible(true);
                     fileEditor.toFront();
                     while (!fileEditor.isSaved() ) {

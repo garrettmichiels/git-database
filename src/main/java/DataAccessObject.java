@@ -133,6 +133,17 @@ public class DataAccessObject {
         return result;
     }
 
+    public String getFileLanguage(String currentFile, String currentBranch, String currentRepository) throws SQLException {
+        CallableStatement stmt = connection.prepareCall("{CALL get_file_language(?, ?, ?, ?)}");
+        stmt.setString(1, currentFile);
+        stmt.setString(2, currentBranch);
+        stmt.setString(3, currentRepository);
+        stmt.registerOutParameter(4, Types.VARCHAR);
+        stmt.execute();
+        String result = stmt.getString(4);
+        return result;
+    }
+
 
     // UPDATE
 

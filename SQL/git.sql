@@ -1,10 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS `git` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `git`;
--- MySQL dump 10.13  Distrib 8.0.36, for macos14 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
 --
 -- Host: localhost    Database: git
 -- ------------------------------------------------------
--- Server version	8.3.0
+-- Server version	8.0.36
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -44,7 +42,7 @@ CREATE TABLE `branch` (
 
 LOCK TABLES `branch` WRITE;
 /*!40000 ALTER TABLE `branch` DISABLE KEYS */;
-INSERT INTO `branch` VALUES ('feature-branch','Database Repo',NULL,0,'Main'),('Main','Database Repo',NULL,1,NULL),('Main','Hello Pim',NULL,1,NULL),('Main','Mungus',NULL,1,NULL),('Main','newRepoName',NULL,1,NULL),('Main','Repo5',NULL,1,NULL),('Main','Test Repo',NULL,1,NULL),('Main','The Hello Project',NULL,1,NULL),('testingbranch','testingrepo',NULL,1,NULL);
+INSERT INTO `branch` VALUES ('610610','mainline',NULL,0,NULL),('feature-branch','Database Repo',NULL,0,'Main'),('Main','Database Repo',NULL,1,NULL),('Main','Hello Pim',NULL,1,NULL),('Main','mainline',NULL,1,NULL),('Main','Mungus',NULL,1,NULL),('Main','newRepoName',NULL,1,NULL),('Main','Repo5',NULL,1,NULL),('Main','Test Repo',NULL,1,NULL),('Main','The Hello Project',NULL,1,NULL),('testingbranch','testingrepo',NULL,1,NULL);
 /*!40000 ALTER TABLE `branch` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -71,7 +69,7 @@ CREATE TABLE `collaboration` (
 
 LOCK TABLES `collaboration` WRITE;
 /*!40000 ALTER TABLE `collaboration` DISABLE KEYS */;
-INSERT INTO `collaboration` VALUES ('test','Database Repo'),('test','Hello Jimmy Fallon'),('MrFrog','Hello Pim'),('test','Hello Pim'),('Jawn','Mungus'),('test','Mungus'),('test','newRepoName'),('test','repo2'),('test','Repo5'),('test','Test Repo'),('test','testingrepo'),('MrFrog','The Hello Project'),('test','The Return Of MrFrog');
+INSERT INTO `collaboration` VALUES ('test','Database Repo'),('test','Hello Jimmy Fallon'),('MrFrog','Hello Pim'),('test','Hello Pim'),('Jawn','mainline'),('Jawn','Mungus'),('test','Mungus'),('test','newRepoName'),('test','repo2'),('test','Repo5'),('test','Test Repo'),('test','testingrepo'),('MrFrog','The Hello Project'),('test','The Return Of MrFrog');
 /*!40000 ALTER TABLE `collaboration` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -93,7 +91,7 @@ CREATE TABLE `commit` (
   KEY `commit_ibfk_2` (`repository`),
   CONSTRAINT `commit_ibfk_1` FOREIGN KEY (`branch`) REFERENCES `branch` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `commit_ibfk_2` FOREIGN KEY (`repository`) REFERENCES `repository` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -102,7 +100,7 @@ CREATE TABLE `commit` (
 
 LOCK TABLES `commit` WRITE;
 /*!40000 ALTER TABLE `commit` DISABLE KEYS */;
-INSERT INTO `commit` VALUES (19,'testingbranch','testingrepo','edit','00:00:00'),(20,'feature-branch','Database Repo','message','13:59:22');
+INSERT INTO `commit` VALUES (19,'testingbranch','testingrepo','edit','00:00:00'),(20,'feature-branch','Database Repo','message','13:59:22'),(23,'610610','mainline','created initialization','00:00:00');
 /*!40000 ALTER TABLE `commit` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -130,7 +128,7 @@ CREATE TABLE `file` (
 
 LOCK TABLES `file` WRITE;
 /*!40000 ALTER TABLE `file` DISABLE KEYS */;
-INSERT INTO `file` VALUES ('aFile',19,'fileLanguage','fileText add some text change\n\nadd more details'),('testfile',20,'java','fileText');
+INSERT INTO `file` VALUES ('aFile',19,'fileLanguage','fileText add some text change\n\nadd more details'),('jawn.py',23,'Python','def __init__():\n    jawn'),('testfile',20,'java','fileText');
 /*!40000 ALTER TABLE `file` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -183,7 +181,7 @@ CREATE TABLE `repository` (
 
 LOCK TABLES `repository` WRITE;
 /*!40000 ALTER TABLE `repository` DISABLE KEYS */;
-INSERT INTO `repository` VALUES ('Database Repo','2024-04-16',NULL,'test'),('Hello Jimmy Fallon','2024-04-10','2024-04-10','MrFrog'),('Hello Pim','2024-04-10','2024-04-10','MrFrog'),('Mungus','2024-04-10','2024-04-10','Jawn'),('newRepoName','2024-04-10','2024-04-10','test'),('repo2','2024-04-10','2024-04-10','test'),('Repo5','2024-04-17','2024-04-10','test'),('Test Repo','2024-04-10','2024-04-10','test'),('testingrepo','2024-04-17',NULL,'test'),('The Hello Project','2024-04-10',NULL,'MrFrog'),('The Return Of MrFrog','2024-04-10',NULL,'MrFrog');
+INSERT INTO `repository` VALUES ('Database Repo','2024-04-16',NULL,'test'),('Hello Jimmy Fallon','2024-04-10','2024-04-10','MrFrog'),('Hello Pim','2024-04-10','2024-04-10','MrFrog'),('mainline','2024-04-17',NULL,'Jawn'),('Mungus','2024-04-10','2024-04-10','Jawn'),('newRepoName','2024-04-10','2024-04-10','test'),('repo2','2024-04-10','2024-04-10','test'),('Repo5','2024-04-17','2024-04-10','test'),('Test Repo','2024-04-10','2024-04-10','test'),('testingrepo','2024-04-17',NULL,'test'),('The Hello Project','2024-04-10',NULL,'MrFrog'),('The Return Of MrFrog','2024-04-10',NULL,'MrFrog');
 /*!40000 ALTER TABLE `repository` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -639,6 +637,26 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_file_language` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_file_language`(IN file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), OUT file_language VARCHAR(256))
+BEGIN
+    SELECT language INTO file_language FROM file JOIN commit ON file.commit = commit.id 
+	WHERE commit.branch = branch_name AND commit.repository = repo_name AND file.name = file_name;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `get_repositories_for_programmer` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -844,4 +862,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-17 14:26:26
+-- Dump completed on 2024-04-17 16:16:50
