@@ -2,34 +2,15 @@ use git;
 
 -- CREATE ------------------------------------------------------------------
 
-DROP PROCEDURE IF EXISTS create_file;
+DROP PROCEDURE IF EXISTS create_commit_file;
 DELIMITER $$
-CREATE PROCEDURE create_file(IN file_text TEXT, file_name VARCHAR(32), commit_id INT, file_language VARCHAR(32))
-BEGIN
-INSERT INTO file (name, commit, language, text)
-VALUES (file_name, commit_id, file_language, file_text);
-END $$
-
-DELIMITER ;
-
-DELIMITER $$
-DROP TRIGGER IF EXISTS insert_branch_trigger;
-CREATE TRIGGER insert_branch_trigger AFTER INSERT ON repository
-FOR EACH ROW
-BEGIN
-  INSERT INTO collaboration VALUES (NEW.creator, NEW.name);
-  INSERT INTO branch (name, repository, isMain, branchedoff) VALUES ("Main", NEW.name, TRUE, NULL);
-END $$
-DELIMITER ;
-
-
-DROP PROCEDURE IF EXISTS create_commit;
-DELIMITER $$
-CREATE PROCEDURE create_commit(IN branch_name VARCHAR(32), repo_name VARCHAR(32), message VARCHAR(128), OUT commit_id INT)
+CREATE PROCEDURE create_commit_file(IN branch_name VARCHAR(32), repo_name VARCHAR(32), message VARCHAR(128), file_name VARCHAR(32), file_language VARCHAR(32), file_text VARCHAR(256))
 BEGIN
 INSERT INTO commit (branch, repository, message, time)
 VALUES (branch_name, repo_name, message, CURRENT_TIMESTAMP);
-SELECT LAST_INSERTED_ID() INTO commit_id;
+
+INSERT INTO file (name, commit, language, text)
+VALUES (file_name, LAST_INSERTED_ID(), file_language, file_text);
 END $$
 
 DELIMITER ;
