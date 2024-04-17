@@ -53,37 +53,6 @@ public class Main { //extends JFrame implements ActionListener {
 
 
 
-    public void getConnection() throws SQLException {
-        Properties connectionProps = new Properties();
-        connectionProps.put("user", this.username);
-        connectionProps.put("password", this.password);
-
-        System.out.println("Connecting to database...");
-        System.out.println("Username: " + this.username);
-        System.out.println("Password: " + this.password);
-
-        //If this fails, connection is null and no DB connection exists.
-        connection = DriverManager.getConnection("jdbc:mysql://"
-                + this.serverName + ":" + this.portNumber
-                + "/" + this.dbName
-                + "?characterEncoding=UTF-8&useSSL=false", connectionProps);
-    }
-
-    public void getUserLogin() {
-        //Get internal username and password
-        scanner = new Scanner(System.in);
-        System.out.print("Enter the username for the internal database: ");
-        serviceUsername = scanner.nextLine();
-        System.out.print("Enter the password for the internal database: ");
-        servicePassword = scanner.nextLine();
-    }
-
-    public void printMenu(List<String> lines) {
-        System.out.println();
-        for (String s: lines) {
-            System.out.println(s);
-        }
-    }
 
     public List<String> getListFromResultSet(ResultSet rs) throws SQLException {
         List<String> list = new ArrayList<>();
@@ -168,7 +137,7 @@ public class Main { //extends JFrame implements ActionListener {
 
                     try {
                         dao.createBranch(newBranchName, currentRepository, false, currentBranch);
-                        //currentBranch = newBranchName;
+                        //currentBranch = newBranchName; TODO check back on this
                     }
                     catch (SQLException e) {
                         System.err.println("Error creating branch: " + e.getMessage());
@@ -376,13 +345,16 @@ public class Main { //extends JFrame implements ActionListener {
                         System.exit(1);
                     }
                     TextEditor fileEditor = new TextEditor();
+                    fileEditor.setTitle(currentFile);
                     fileEditor.setText(originalFileContents);
                     fileEditor.setVisible(true);
+                    fileEditor.toFront();
                     while (!fileEditor.isSaved() ) {
                         // Wait for the user to save the file
                     }
                     String fileContents = fileEditor.getText();
                     fileEditor.dispose();
+
                     System.out.println("Enter a commit message: ");
                     String commitMessage = scanner.nextLine();
                     try {
@@ -425,6 +397,13 @@ public class Main { //extends JFrame implements ActionListener {
         }
     }
 
+    public void printMenu(List<String> lines) {
+        System.out.println();
+        for (String s: lines) {
+            System.out.println(s);
+        }
+    }
+
     public boolean validateInput(String input, int min, int max) {
         try {
             int selection = Integer.parseInt(input);
@@ -436,6 +415,31 @@ public class Main { //extends JFrame implements ActionListener {
         catch (Exception e) {
             return false;
         }
+    }
+
+    public void getConnection() throws SQLException {
+        Properties connectionProps = new Properties();
+        connectionProps.put("user", this.username);
+        connectionProps.put("password", this.password);
+
+        System.out.println("Connecting to database...");
+        System.out.println("Username: " + this.username);
+        System.out.println("Password: " + this.password);
+
+        //If this fails, connection is null and no DB connection exists.
+        connection = DriverManager.getConnection("jdbc:mysql://"
+                + this.serverName + ":" + this.portNumber
+                + "/" + this.dbName
+                + "?characterEncoding=UTF-8&useSSL=false", connectionProps);
+    }
+
+    public void getUserLogin() {
+        //Get internal username and password
+        scanner = new Scanner(System.in);
+        System.out.print("Enter the username for the internal database: ");
+        serviceUsername = scanner.nextLine();
+        System.out.print("Enter the password for the internal database: ");
+        servicePassword = scanner.nextLine();
     }
 
     public void run() {

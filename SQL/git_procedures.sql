@@ -99,7 +99,16 @@ CREATE PROCEDURE get_branches_in_repo(repo VARCHAR(32))
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS get_file_content;
+DELIMITER $$
+CREATE PROCEDURE get_file_content (IN file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), OUT file_text VARCHAR(256))
+    BEGIN
+    
+      SELECT text INTO file_text FROM file JOIN commit ON file.commit = commit.id 
+      WHERE commit.branch = branch_name AND commit.repository = repo_name AND file.name = file_name;
+	END $$
 
+DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS get_files_in_branch;
@@ -196,13 +205,27 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS update_file_contents;
 DELIMITER $$
-CREATE PROCEDURE update_file_contents(file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), file_language VARCHAR(32), file_text VARCHAR(256))
+CREATE PROCEDURE update_file_contents(file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), commit_message VARCHAR(32), file_text VARCHAR(256))
 BEGIN
-UPDATE file SET text = file_text, language = file_language WHERE name = old_file_name 
-AND commit IN (SELECT id FROM commit WHERE branch = branch_name AND repository = repo_name);
+
+-- Get current commit id
+DECLARE current_commit_id INT;
+SELECT commit.id INTO current_commit_id FROM file JOIN commit ON file.commit = commit.id
+  WHERE file.name = file_name AND commit.branch = branch_name AND commit.repository = repo_name;
+  
+-- Create new commit
+INSERT INTO commit (branch, repository, message, time) VALUES (branch_name, repo_name, commit_message, CURRENT_DATE);
+
+-- update file content
+UPDATE file SET text = file_text, commit = LAST_INSERT_ID() WHERE commit = current_commit_id;
+
+-- delete commit
+DELETE FROM commit WHERE id = current_commit_id;
+
 END $$
 
 DELIMITER ;
+
 
 
 -- DELETE ------------------------------------------------------------------
@@ -309,5 +332,3 @@ CREATE PROCEDURE validate_login(username VARCHAR(32), password VARCHAR(32), OUT 
     END $$
 
 DELIMITER ;
-
--- last_inserted_id()

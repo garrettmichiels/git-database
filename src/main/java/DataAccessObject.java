@@ -127,7 +127,7 @@ public class DataAccessObject {
     }
 
     public String getFileContents(String currentFile, String currentBranch, String currentRepository) throws SQLException {
-        CallableStatement stmt = connection.prepareCall("{CALL get_file_contents(?, ?, ?, ?)}");
+        CallableStatement stmt = connection.prepareCall("{CALL get_file_content(?, ?, ?, ?)}");
         stmt.setString(1, currentFile);
         stmt.setString(2, currentBranch);
         stmt.setString(3, currentRepository);
@@ -171,12 +171,14 @@ public class DataAccessObject {
     }
 
     public void editFile(String filename, String newText, String commitMessage, String branchName, String repoName) throws SQLException {
-        CallableStatement stmt = connection.prepareCall("{Call edit_file(?, ?, ?, ?, ?)}");
+        CallableStatement stmt = connection.prepareCall("{Call update_file_contents(?, ?, ?, ?, ?)}");
         stmt.setString(1, filename);
-        stmt.setString(2, newText);
-        stmt.setString(3, commitMessage);
-        stmt.setString(4, branchName);
-        stmt.setString(5, repoName);
+        stmt.setString(2, branchName);
+        stmt.setString(3, repoName);
+        stmt.setString(4, commitMessage);
+        stmt.setString(5, newText);
+        
+
         stmt.execute();
     }
 
