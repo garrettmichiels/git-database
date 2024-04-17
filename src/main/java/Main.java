@@ -450,12 +450,9 @@ public class Main { //extends JFrame implements ActionListener {
         boolean logging_in = true;
         while (logging_in) {
             scanner = new Scanner(System.in);
-            System.out.print("Enter the username for the internal database: ");
-            serviceUsername = scanner.nextLine();
-            System.out.print("Enter the password for the internal database: ");
-            servicePassword = scanner.nextLine();
+            getUserLogin();
             try {
-            while (!dao.validateLogin(serviceUsername, servicePassword)) {
+                while (!dao.validateLogin(serviceUsername, servicePassword)) {
                     System.out.println("Login failed");
                     getUserLogin();
                 }

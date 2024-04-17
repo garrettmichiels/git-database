@@ -134,10 +134,16 @@ DELIMITER ;
 -- Returns the repostiories associated with a programmer
 DROP PROCEDURE IF EXISTS get_repositories_for_programmer;
 DELIMITER $$
-CREATE PROCEDURE get_repositories_for_programmer(IN username VARCHAR(32))
-BEGIN
-SELECT repository FROM collaboration WHERE programmer = username;
-END $$
+CREATE PROCEDURE get_repositories_for_programmer(IN user_name VARCHAR(32))
+	BEGIN
+		DECLARE is_manager BOOL;
+        SELECT isManager into is_manager FROM programmer WHERE username = user_name;
+        IF is_Manager THEN
+		SELECT name FROM repository;
+        ELSE
+        SELECT repository FROM collaboration WHERE programmer = user_name;
+        END IF;
+	END $$
 
 DELIMITER ;
 
