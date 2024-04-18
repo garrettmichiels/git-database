@@ -10,11 +10,11 @@ If the procedures are not populated, run git_procedure.sql
 ### Design
 
 Our original schema design
-<!-- ![Original schema](image_url) -->
+![Original schema](/images/originalUML.png)
 
 
 Our current schema design
-<!-- ![Current schema](image_url) -->
+![Current schema](/images/currentSchema.png)
 
 
 Our user interaction diagram
