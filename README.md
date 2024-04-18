@@ -4,8 +4,7 @@ This is the final project for Database Design CS3200. This is a simplified versi
 
 
 ## Building The Project
-Run the Schema in your MySQL server. The schema dump file is called `git.sql`
-If the procedures are not populated, run `git_procedure.sql`
+Import the Schema into your MySQL server. The schema dump file is called `git.sql`
 
 ## Running The Project
 To run the program, navigate to the file with the project jar and type the following into the terminal:

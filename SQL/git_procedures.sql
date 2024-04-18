@@ -101,9 +101,8 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS get_file_content;
 DELIMITER $$
-CREATE PROCEDURE get_file_content (IN file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), OUT file_text VARCHAR(256))
+CREATE PROCEDURE get_file_content(IN file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), OUT file_text VARCHAR(256))
     BEGIN
-    
       SELECT text INTO file_text FROM file JOIN commit ON file.commit = commit.id 
       WHERE commit.branch = branch_name AND commit.repository = repo_name AND file.name = file_name;
 	END $$
@@ -112,13 +111,13 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS get_file_language;
 DELIMITER $$
-CREATE PROCEDURE get_file_language(IN file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), OUT file_language VARCHAR(256))
+CREATE PROCEDURE get_file_language(IN file_name VARCHAR(32), branch_name VARCHAR(32), repo_name VARCHAR(32), OUT file_language VARCHAR(32))
   BEGIN
-  
     SELECT language INTO file_language FROM file JOIN commit ON file.commit = commit.id 
 	  WHERE commit.branch = branch_name AND commit.repository = repo_name AND file.name = file_name;
   END$$
 
+DELIMITER ;
 
 DROP PROCEDURE IF EXISTS get_files_in_branch;
 DELIMITER $$

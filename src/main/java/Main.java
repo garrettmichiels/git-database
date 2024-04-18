@@ -382,7 +382,9 @@ public class Main { //extends JFrame implements ActionListener {
     }
 
     public void printMenu(List<String> lines) {
-        System.out.println();
+        //Add some spacing between menus
+        System.out.println("\n\n\n\n");
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~");
         for (String s: lines) {
             System.out.println(s);
         }
