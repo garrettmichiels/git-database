@@ -66,7 +66,7 @@ import org.apache.commons.cli.*;
 
 
 Our user interaction diagram
-<!-- ![User Flow Diagram](image_url) -->
+![User Flow Diagram](/images/userFlowDiagram.jpg)
 
 
-Note: in order to create, rename or delete an object, you must be within that object to do so. For example, in order to delete a repository, you must enter that repository and then type the delete command.
+**Note**: in order to create, rename or delete an object, you must be within that object to do so. For example, in order to delete a repository, you must enter that repository and then type the delete command.
