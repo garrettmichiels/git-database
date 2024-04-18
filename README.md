@@ -28,7 +28,7 @@ db          |    design
 # IMPORTANT
 If there are permissions issues running the jar file, run:
 
-`chmod 775 project.jar`
+`chmod 775 gitDB.jar`
 
 ### Libraries and Softwares
 This project uses a Java JDK version [Insert Version Here]+ and utilizes Swing, java.sql.connection as our JDBC, 
